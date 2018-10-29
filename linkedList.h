@@ -1,5 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #pragma once
 
 typedef struct linkedList {
@@ -15,4 +17,7 @@ void list_free(list**);
 size_t list_length(list**);
 list* list_node_at(size_t, list**);
 long list_sum(list**);
-
+bool save(struct list* lst, const char* filename);
+bool load(struct list** lst, const char* filename);
+bool serialize(struct list* lst, const char* filename);
+bool deserialize(struct list** lst, const char* filename);

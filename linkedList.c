@@ -92,3 +92,56 @@ void list_print(list** firstEl) {
 	}
 	*firstEl = NULL;
 }
+
+bool save(list* lst, const char* filename) {
+	FILE *f = fopen(filename,"w");
+	if (f == NULL) return false;
+	while (lst != NULL) {
+		fprintf(f, "%d\n", lst->value);
+		lst = lst->next;
+	}
+	fclose(f);
+	return true;
+}
+
+bool load(list** lst, const char* filename) {
+	int value=0;
+	FILE *f = fopen(filename, "r");
+	if (f == NULL) return false;
+	while (fscanf(f, "%d", &value) != EOF) {
+		list_add_front(value,lst);
+	}
+	fclose(f);
+	return true;
+}
+
+bool serialize(list* lst, const char* filename) {
+	FILE *f = fopen(filename, "w");
+	if (f==NULL) return false;
+	size_t i, size = list_length(&lst);
+	int *buffer = (int*)malloc(size*sizeof(int));
+	for (i = 0;i < size;i++) {
+		buffer[i] = lst->value;
+		lst = lst->next;
+	}
+	fwrite(buffer, size*sizeof(int), 1, f);
+	fclose(f);
+	return true;
+}
+
+bool deserialize(list** lst, const char* filename) {
+	int* buf;
+	size_t size, i;
+	FILE *f = fopen(filename, "r");
+	if (f == NULL) return false;
+	fseek(f, 0, SEEK_END);
+	size = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	buf = (int*)malloc(size);
+	fread(buf, size, 1, f);
+	for (i = 0;i < size/sizeof(int);i++) {
+		list_add_front(buf[i],lst);
+	}
+	fclose(f);
+	return true;
+}

@@ -15,6 +15,9 @@ int main() {
 	else {
 		printf("Значение по индексу %d: %d\n", index, element->value);
 	}
+	serialize(first, "serialezedList");
+	deserialize(&first, "serialezedList");
+	save(first, "testSavingList");
 	list_free(&first);
 	return 0;
 }
