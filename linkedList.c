@@ -3,6 +3,7 @@
 list* list_create(int value) {
 	list* element = (list*)malloc(sizeof(list));
 	element->value = value;
+	element->next = NULL;
 	return element;
 }
 
@@ -13,12 +14,18 @@ void list_add_front(int value, list** firstEl) {
 }
 
 void list_add_back(int value, list** firstEl) {
-	list* lastEl = list_create(value);
-	list* currentEl = *firstEl;
-	while (currentEl->next != NULL) {
-		currentEl = currentEl->next;
+	if (*firstEl == NULL) {
+		*firstEl = list_create(value);
+		return;
 	}
-	currentEl->next = lastEl;
+	else {
+		list* lastEl = list_create(value);
+		list* currentEl = *firstEl;
+		while (currentEl->next != NULL) {
+			currentEl = currentEl->next;
+		}
+		currentEl->next = lastEl;
+	}
 }
 
 int list_get(size_t index, list** firstEl) {
@@ -28,12 +35,10 @@ int list_get(size_t index, list** firstEl) {
 }
 
 void list_free(list** firstEl) {
-	list* currentEl = *firstEl;
-	list* nextEl;
-	while (currentEl != NULL) {
-		nextEl = currentEl->next;
-		free(currentEl);
-		currentEl = nextEl;
+	while (*firstEl != NULL) {
+		list* last = (*firstEl)->next;
+		free(*firstEl);
+		(*firstEl) = last;
 	}
 }
 
@@ -58,7 +63,7 @@ list* list_node_at(size_t index, list** firstEl) {
 	return currentEl;
 }
 
-long list_sum(list** firstEl) {
+int list_sum(list** firstEl) {
 	long sum = 0;
 	list* currentEl = *firstEl;
 	while (currentEl != NULL) {
@@ -70,13 +75,25 @@ long list_sum(list** firstEl) {
 
 void list_read(list** firstEl) {
 	int ch,value=0;
+	bool space = false, minus=false;
 	while ((ch = getchar()) != EOF){
-		printf("%d",ch);
 		if (!isspace(ch) && ch!='\n') {
-			value = value * 10 + ch - '0';
+			if (ch == '-') {
+				minus = true;
+			}
+			else {
+				value = value * 10 + ch - '0';
+				space = false;
+			}
+
 		}
 		else {
-			list_add_front(value, firstEl);
+			if (!space) {
+				if (minus) value = -value;
+				list_add_front(value, firstEl);
+			}
+			space = true;
+			minus = false;
 			value = 0;
 			if (ch == '\n') { return 0; }
 		}
@@ -87,10 +104,11 @@ void list_read(list** firstEl) {
 void list_print(list** firstEl) {
 	list* currentEl = *firstEl;
 	while (currentEl != NULL) {
-		printf("%d\n",currentEl->value);
+		printf("%d ",currentEl->value);
 		currentEl = currentEl->next;
 	}
-	*firstEl = NULL;
+	printf("\n");
+	//*firstEl = NULL;
 }
 
 bool save(list* lst, const char* filename) {
@@ -109,7 +127,7 @@ bool load(list** lst, const char* filename) {
 	FILE *f = fopen(filename, "r");
 	if (f == NULL) return false;
 	while (fscanf(f, "%d", &value) != EOF) {
-		list_add_front(value,lst);
+		list_add_back(value,lst);
 	}
 	fclose(f);
 	return true;
@@ -140,7 +158,7 @@ bool deserialize(list** lst, const char* filename) {
 	buf = (int*)malloc(size);
 	fread(buf, size, 1, f);
 	for (i = 0;i < size/sizeof(int);i++) {
-		list_add_front(buf[i],lst);
+		list_add_back(buf[i],lst);
 	}
 	fclose(f);
 	return true;
